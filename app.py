@@ -111,7 +111,7 @@ def _invalidate_clone_cache():
     _clone_cache = None
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-VERSION          = "1.3.2"
+VERSION          = "1.3.3"
 GITHUB_REPO      = "tagee1/VoxWild"
 MAX_HISTORY      = 10
 
@@ -2544,6 +2544,30 @@ def queue_generate_all():
                 words_done += len(item["text"].split())
                 safe_name = item['name'].replace(' ', '_')
                 out_path  = os.path.join(out_dir, f"{i+1:02d}_{safe_name}{ext}")
+                # ── Resemble Enhance (if enabled and licensed) ────────────────
+                if enhance_var.get() and _lic.can_use_enhance():
+                    try:
+                        scb("✨ Enhancing...")
+                        mode = enhance_mode.get()
+                        device = "cuda" if mode == "GPU" else "cpu"
+                        input_tmp  = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+                        output_tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+                        input_tmp.close()
+                        output_tmp.close()
+                        sf.write(input_tmp.name, samples, sr)
+                        enhance_engine.start()
+                        new_sr, _ = enhance_engine.enhance(
+                            input_tmp.name, output_tmp.name, device=device)
+                        samples, sr = sf.read(output_tmp.name, dtype="float32")
+                        sr = new_sr
+                        _lic.record_enhance_use()
+                    except Exception as _ee:
+                        scb(f"⚠️ Enhance failed, saving unenhanced: {_fmt_err(_ee)}")
+                    finally:
+                        for _t in (input_tmp.name, output_tmp.name):
+                            try: os.unlink(_t)
+                            except OSError: pass
+
                 if use_mp3:
                     scb(f"Encoding MP3...")
                     _encode_mp3_file(out_path, samples, sr, bitrate,
