@@ -111,7 +111,7 @@ def _invalidate_clone_cache():
     _clone_cache = None
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-VERSION          = "1.3.3"
+VERSION          = "1.3.4"
 GITHUB_REPO      = "tagee1/VoxWild"
 MAX_HISTORY      = 10
 
@@ -2091,7 +2091,8 @@ def generate_audio(text, voice, speed, status_cb=None, progress_range=(0.0, 0.95
         if not chatterbox_engine.is_ready:
             if status_cb: status_cb("Waiting for Natural mode to finish loading...")
             chatterbox_engine.start(status_cb=status_cb)
-        chunks = chunk_text(text)
+        # Chatterbox's T3 model silently truncates around ~500 chars — keep chunks small
+        chunks = chunk_text(text, max_chars=300)
         all_samples, sample_rate = [], None
         _clone_path = cb_clone_path_var.get()
         if _clone_path and not os.path.exists(_clone_path):
