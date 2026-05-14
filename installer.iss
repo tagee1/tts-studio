@@ -12,7 +12,7 @@
 ;     /a installer_output\VoxWild-Setup.exe
 
 #define MyAppName      "VoxWild"
-#define MyAppVersion   "1.3.2"
+#define MyAppVersion   "1.3.4"
 #define MyAppPublisher "Cookie Studios"
 #define MyAppURL       "https://cookiestudios.gumroad.com/l/VoxWildPro"
 #define MyAppSupportURL "mailto:cookiestudios.dev@gmail.com"
